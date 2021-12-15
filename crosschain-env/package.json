@@ -11,7 +11,10 @@
     "scripts": {
         "optimism:start": "docker-compose -f optimism/docker-compose.yml up -d ",
         "optimism:stop": "docker-compose -f optimism/docker-compose.yml down",
-        "optimism:check": "utils/ready.sh",
-        "optimism:wait": "utils/ready.sh -w"
+        "optimism:check": "node utils/ready.js",
+        "optimism:wait": "node utils/ready.js -w"
+    },
+    "dependencies": {
+        "spinnies": "^0.5.1"
     }
 }
