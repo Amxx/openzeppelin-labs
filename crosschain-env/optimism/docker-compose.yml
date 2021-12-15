@@ -93,3 +93,22 @@ services:
       URL: http://deployer:8081/addresses.json
       SEQUENCER_PRIVATE_KEY: "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
       PROPOSER_PRIVATE_KEY: "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"
+
+  relayer:
+    depends_on:
+      - l1
+      - l2
+      - deployer
+    image: ethereumoptimism/message-relayer:${DOCKER_TAG:-latest}
+    deploy:
+      replicas: 1
+    entrypoint: ./relayer.sh
+    environment:
+        L1_NODE_WEB3_URL: http://l1:8545
+        L2_NODE_WEB3_URL: http://l2:8545
+        URL: http://deployer:8081/addresses.json
+        # a funded hardhat account
+        L1_WALLET_KEY: "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97"
+        RETRIES: 60
+        POLLING_INTERVAL: 500
+        GET_LOGS_INTERVAL: 500

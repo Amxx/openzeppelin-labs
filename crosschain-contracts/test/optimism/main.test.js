@@ -32,6 +32,7 @@ const L2           = {};
 
 describe('Optimism Relay', function () {
     before(async function() {
+        // Environment
         L1.provider  = ethers.getDefaultProvider('http://127.0.0.1:9545');
         L2.provider  = ethers.getDefaultProvider('http://127.0.0.1:8545');
         L1.signer    = ethers.Wallet.fromMnemonic(MNEMONIC).connect(L1.provider);
@@ -40,24 +41,19 @@ describe('Optimism Relay', function () {
         L2.messenger = await attach('L2CrossDomainMessenger',    ADDRESSES.L2CrossDomainMessenger,            { signer: L2.signer });
         L1.manager   = await attach('Lib_AddressManager',        ADDRESSES.Lib_AddressManager,                { signer: L1.signer });
         L1.canonical = await attach('CanonicalTransactionChain', ADDRESSES.CanonicalTransactionChain,         { signer: L1.signer });
-    // });
 
-    // beforeEach(async function() {
+        // Deploy test contracts
         L1.instance = await deploy('RelayOptimism', [ L1.messenger.address ], { signer: L1.signer });
         L2.instance = await deploy('RelayOptimism', [ L2.messenger.address ], { signer: L2.signer });
         L1.sink     = await deploy('Sink',                                    { signer: L1.signer });
         L2.sink     = await deploy('Sink',                                    { signer: L2.signer });
 
-        L1.sink.on(L1.sink.filters.TX(),  args => console.log('L1 SINK', args));
-        L2.sink.on(L2.sink.filters.TX(),  args => console.log('L2 SINK', args));
-
+        // Configure test contracts
         await L1.instance.setPair(L2.instance.address, { gasLimit: 100000 });
         await L2.instance.setPair(L1.instance.address, { gasLimit: 100000 });
         await L1.instance.grantRole(RELAYER_ROLE, L1.signer.address, { gasLimit: 100000 });
         await L2.instance.grantRole(RELAYER_ROLE, L2.signer.address, { gasLimit: 100000 });
     });
-
-    // afterEach(() => wait(1000));
 
     it('sanity', async function () {
         const contracts = await Promise.all(Object.entries(ADDRESSES).map(
@@ -69,28 +65,19 @@ describe('Optimism Relay', function () {
         Object.entries(contracts).map(([ name, { address, isL1, isL2 } ]) => console.log(`[${address}] ${name.padEnd(36)} ${Number(isL1)} ${Number(isL2)}`));
     });
 
-    describe('initial checks', function () {
-        it('check state', async function () {
-            expect(await L1.instance.pair()).to.be.equal(L2.instance.address);
-            expect(await L2.instance.pair()).to.be.equal(L1.instance.address);
-            expect(await L1.provider.getCode(L1.instance.address)).to.not.be.equal('0x');
-            expect(await L2.provider.getCode(L2.instance.address)).to.not.be.equal('0x');
-            expect(await L1.messenger.resolve('CanonicalTransactionChain')).to.be.equal(L1.canonical.address);
+    it('check state', async function () {
+        expect(await L1.instance.pair()).to.be.equal(L2.instance.address);
+        expect(await L2.instance.pair()).to.be.equal(L1.instance.address);
+        expect(await L1.provider.getCode(L1.instance.address)).to.not.be.equal('0x');
+        expect(await L2.provider.getCode(L2.instance.address)).to.not.be.equal('0x');
+        expect(await L1.messenger.resolve('CanonicalTransactionChain')).to.be.equal(L1.canonical.address);
 
-            console.log('L1.network:', await L1.provider.getNetwork().then(({ name, chainId }) => `${name}-${chainId}`));
-            console.log('L2.network:', await L2.provider.getNetwork().then(({ name, chainId }) => `${name}-${chainId}`));
-            console.log('L1.signer:',  L1.signer.address, await L1.provider.getBalance(L1.signer.address).then(ethers.utils.formatEther), ethers.constants.EtherSymbol);
-            console.log('L2.signer:',  L2.signer.address, await L2.provider.getBalance(L2.signer.address).then(ethers.utils.formatEther), ethers.constants.EtherSymbol);
-            console.log('L1.instance:', L1.instance.address);
-            console.log('L2.instance:', L2.instance.address);
-        });
-
-        it.skip('check listeners', async function () {
-            await L1.instance.emit(L1.instance.filters.CrossChainCallSubmitted(), 'test');
-            await L2.instance.emit(L1.instance.filters.CrossChainCallSubmitted(), 'test');
-            await L1.instance.emit(L1.instance.filters.CrossChainCallReceived(),  'test');
-            await L2.instance.emit(L1.instance.filters.CrossChainCallReceived(),  'test');
-        });
+        console.log('L1.network:', await L1.provider.getNetwork().then(({ name, chainId }) => `${name}-${chainId}`));
+        console.log('L2.network:', await L2.provider.getNetwork().then(({ name, chainId }) => `${name}-${chainId}`));
+        console.log('L1.signer:',  L1.signer.address, await L1.provider.getBalance(L1.signer.address).then(ethers.utils.formatEther), ethers.constants.EtherSymbol);
+        console.log('L2.signer:',  L2.signer.address, await L2.provider.getBalance(L2.signer.address).then(ethers.utils.formatEther), ethers.constants.EtherSymbol);
+        console.log('L1.instance:', L1.instance.address);
+        console.log('L2.instance:', L2.instance.address);
     });
 
     describe('cross chain calls', function () {
@@ -108,7 +95,7 @@ describe('Optimism Relay', function () {
             .to.emit(L1.instance,  'CrossChainTxSent').withArgs(target, value, data)
             .to.emit(L1.messenger, 'SentMessage'     ).withArgs(L2.instance.address, L1.instance.address, _message, _nonce, _gasLimit);
 
-            await wait(3000);
+            await wait(5000);
 
             const [ tx ] = await L2.provider.getBlock().then(({ transactions }) => transactions.map(txhash => L2.provider.getTransaction(txhash)));
 
@@ -119,29 +106,27 @@ describe('Optimism Relay', function () {
         });
 
         it('L2 → L1', async function () {
-            const target = ethers.constants.AddressZero;
+            const target = L1.sink.address;
             const value  = 0;
-            const data   = '0x';
+            const data   = '0x02468ace';
             const gas    = 1_000_000;
 
             const _message  = L2.instance.interface.encodeFunctionData('receiveCrossChainTx', [ target, value, data ]);
             const _nonce    = await L2.messenger.messageNonce();
             const _gasLimit = 1_000_000; // hardcoded
 
-            // console.log('L2.emittedCount ', await L2.instance.emittedCount());
-            // console.log('L1.receivedCount', await L1.instance.receivedCount());
-
             await expect(L2.instance.sendCrossChainTx(target, value, data, gas, { gasLimit: 1000000 }))
             .to.emit(L2.instance,  'CrossChainTxSent').withArgs(target, value, data)
             .to.emit(L2.messenger, 'SentMessage'     ).withArgs(L1.instance.address, L2.instance.address, _message, _nonce, _gasLimit);
 
-            // console.log('L2.emittedCount ', await L2.instance.emittedCount());
-            // console.log('L1.receivedCount', await L1.instance.receivedCount());
+            await wait(5000);
 
-            // await wait(10000);
+            const [ tx ] = await L1.provider.getBlock().then(({ transactions }) => transactions.map(txhash => L1.provider.getTransaction(txhash)));
 
-            // console.log('L2.emittedCount ', await L2.instance.emittedCount());
-            // console.log('L1.receivedCount', await L1.instance.receivedCount());
+            await expect(tx)
+            .to.emit(L1.messenger, 'RelayedMessage')
+            .to.emit(L1.instance,  'CrossChainTxReceived').withArgs(target, value, data)
+            .to.emit(L1.sink,      'TX'                  ).withArgs(L1.instance.address, value, data);
         });
     });
 });
