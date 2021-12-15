@@ -40,16 +40,16 @@ describe('Optimism Relay', function () {
         L2.messenger = await attach('L2CrossDomainMessenger',    ADDRESSES.L2CrossDomainMessenger,            { signer: L2.signer });
         L1.manager   = await attach('Lib_AddressManager',        ADDRESSES.Lib_AddressManager,                { signer: L1.signer });
         L1.canonical = await attach('CanonicalTransactionChain', ADDRESSES.CanonicalTransactionChain,         { signer: L1.signer });
-    });
+    // });
 
-    beforeEach(async function() {
-        L1.instance  = await deploy('RelayOptimism', [ L1.messenger.address ], { signer: L1.signer });
-        L2.instance  = await deploy('RelayOptimism', [ L2.messenger.address ], { signer: L2.signer });
+    // beforeEach(async function() {
+        L1.instance = await deploy('RelayOptimism', [ L1.messenger.address ], { signer: L1.signer });
+        L2.instance = await deploy('RelayOptimism', [ L2.messenger.address ], { signer: L2.signer });
+        L1.sink     = await deploy('Sink',                                    { signer: L1.signer });
+        L2.sink     = await deploy('Sink',                                    { signer: L2.signer });
 
-        L1.instance.on(L1.instance.filters.CrossChainTxSent(), args => console.log('L1 CrossChainTxSent', args));
-        L2.instance.on(L2.instance.filters.CrossChainTxSent(), args => console.log('L2 CrossChainTxSent', args));
-        L1.instance.on(L1.instance.filters.CrossChainTxReceived(),  args => console.log('L1 CrossChainTxReceived', args));
-        L2.instance.on(L2.instance.filters.CrossChainTxReceived(),  args => console.log('L2 CrossChainTxReceived', args));
+        L1.sink.on(L1.sink.filters.TX(),  args => console.log('L1 SINK', args));
+        L2.sink.on(L2.sink.filters.TX(),  args => console.log('L2 SINK', args));
 
         await L1.instance.setPair(L2.instance.address, { gasLimit: 100000 });
         await L2.instance.setPair(L1.instance.address, { gasLimit: 100000 });
@@ -95,9 +95,9 @@ describe('Optimism Relay', function () {
 
     describe('cross chain calls', function () {
         it('L1 → L2', async function () {
-            const target = ethers.constants.AddressZero;
+            const target = L2.sink.address;
             const value  = 0;
-            const data   = '0x';
+            const data   = '0x01234567';
             const gas    = 1_000_000;
 
             const _message  = L1.instance.interface.encodeFunctionData('receiveCrossChainTx', [ target, value, data ]);
@@ -106,7 +106,16 @@ describe('Optimism Relay', function () {
 
             await expect(L1.instance.sendCrossChainTx(target, value, data, gas, { gasLimit: 1000000 }))
             .to.emit(L1.instance,  'CrossChainTxSent').withArgs(target, value, data)
-            .to.emit(L1.messenger, 'SentMessage'     ).withArgs(L2.instance.address, L1.instance.address, _message, _nonce, _gasLimit)
+            .to.emit(L1.messenger, 'SentMessage'     ).withArgs(L2.instance.address, L1.instance.address, _message, _nonce, _gasLimit);
+
+            await wait(3000);
+
+            const [ tx ] = await L2.provider.getBlock().then(({ transactions }) => transactions.map(txhash => L2.provider.getTransaction(txhash)));
+
+            await expect(tx)
+            .to.emit(L2.messenger, 'RelayedMessage')
+            .to.emit(L2.instance,  'CrossChainTxReceived').withArgs(target, value, data)
+            .to.emit(L2.sink,      'TX'                  ).withArgs(L2.instance.address, value, data);
         });
 
         it('L2 → L1', async function () {
@@ -119,9 +128,20 @@ describe('Optimism Relay', function () {
             const _nonce    = await L2.messenger.messageNonce();
             const _gasLimit = 1_000_000; // hardcoded
 
+            // console.log('L2.emittedCount ', await L2.instance.emittedCount());
+            // console.log('L1.receivedCount', await L1.instance.receivedCount());
+
             await expect(L2.instance.sendCrossChainTx(target, value, data, gas, { gasLimit: 1000000 }))
             .to.emit(L2.instance,  'CrossChainTxSent').withArgs(target, value, data)
-            .to.emit(L2.messenger, 'SentMessage'     ).withArgs(L1.instance.address, L2.instance.address, _message, _nonce, _gasLimit)
+            .to.emit(L2.messenger, 'SentMessage'     ).withArgs(L1.instance.address, L2.instance.address, _message, _nonce, _gasLimit);
+
+            // console.log('L2.emittedCount ', await L2.instance.emittedCount());
+            // console.log('L1.receivedCount', await L1.instance.receivedCount());
+
+            // await wait(10000);
+
+            // console.log('L2.emittedCount ', await L2.instance.emittedCount());
+            // console.log('L1.receivedCount', await L1.instance.receivedCount());
         });
     });
 });
