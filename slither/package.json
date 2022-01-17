@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "compile": "hardhat compile",
+		"slither": "slither . --exclude-dependencies"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts-upgradeable": "^4.5.0-rc.0"
+  },
+  "devDependencies": {
+    "hardhat": "^2.0.10"
+  }
+}
