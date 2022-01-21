@@ -15,7 +15,7 @@ abstract contract CrossChainEnabledAMB is CrossChainEnabled {
         return msg.sender == amb;
     }
 
-    function _crossChainSender() internal view virtual override returns (address) {
+    function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
         return IAMB(amb).messageSender();
     }
 }

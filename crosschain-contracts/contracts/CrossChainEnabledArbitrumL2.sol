@@ -10,7 +10,7 @@ abstract contract CrossChainEnabledArbitrumL2 is CrossChainEnabled {
         return true; // TODO: can we detect that ?
     }
 
-    function _crossChainSender() internal view virtual override returns (address) {
+    function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
         return address(uint160(msg.sender) - offset); // TODO: if crosschain, then get L1 by reverting L1toL2Alias
     }
 }

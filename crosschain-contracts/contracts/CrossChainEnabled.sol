@@ -2,14 +2,17 @@
 pragma solidity ^0.8.0;
 
 abstract contract CrossChainEnabled {
+    error NotCrossChainCall();
+    error InvalidCrossChainSender(address sender, address expected);
+
     modifier onlyCrossChain() {
-        require(_isCrossChain(), "not-a-crosschain-call");
+        if (!_isCrossChain()) revert NotCrossChainCall();
         _;
     }
 
     modifier onlyCrossChainSender(address account) {
-        require(_isCrossChain(), "not-a-crosschain-call");
-        require(account == _crossChainSender(), "wrong-crosschain-sender");
+        address sender = _crossChainSender();
+        if (account != sender) revert InvalidCrossChainSender(sender, account);
         _;
     }
 
@@ -17,7 +20,7 @@ abstract contract CrossChainEnabled {
         return false;
     }
 
-    function _crossChainSender() internal view virtual returns (address) {
+    function _crossChainSender() internal view virtual onlyCrossChain() returns (address) {
         return address(0); // TODO: revert?
     }
 }

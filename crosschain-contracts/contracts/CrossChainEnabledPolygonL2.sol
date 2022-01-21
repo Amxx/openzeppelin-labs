@@ -17,7 +17,7 @@ abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessagePro
         return msg.sender == fxChild;
     }
 
-    function _crossChainSender() internal view virtual override returns (address) {
+    function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
         return __crossChainSender;
     }
 
