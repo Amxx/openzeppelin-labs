@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "./libs/LibCrossChain.sol";
+
+abstract contract Connector {
+    LibCrossChain.Bridge private _bridge;
+    address              private _endpoint;
+    address              private _pair;
+
+    constructor(LibCrossChain.Bridge memory bridge) {
+        _bridge = bridge;
+    }
+
+    fallback() external virtual {
+        _fallback();
+    }
+
+    function _fallback() internal virtual {
+        if (_bridge.isCall() && _bridge.msgSender() == _pair) {
+            _relay();
+        } else if (_isAuthorized(msg.sender)) {
+            _forward();
+        } else {
+            revert("Restricted access");
+        }
+    }
+
+    function _relay() internal virtual {
+        (bool success, bytes memory returndata) = _endpoint.call(msg.data);
+        Address.verifyCallResult(success, returndata, "Relayed call failled");
+    }
+
+    function _forward() internal virtual {
+        _bridge.sendMessage(_pair, msg.data);
+    }
+
+    function _isAuthorized(address account) internal view virtual returns (bool) {
+        return account == _endpoint;
+    }
+
+    function _setEndpoint(address newEndpoint) internal virtual {
+        address oldEndpoint = _endpoint;
+        _endpoint = newEndpoint;
+        emit EndpointSet(oldEndpoint, newEndpoint);
+    }
+
+    function _setPair(address newPair) internal virtual {
+        address oldPair = _pair;
+        _pair = newPair;
+        emit PairSet(oldPair, newPair);
+    }
+}
+
+abstract contract AdminConnector is Connector {
+    address private _admin;
+
+    modifier ifAdmin() {
+        if (msg.sender == _admin) {
+            _;
+        } else {
+            _fallback();
+        }
+    }
+
+    function setEndpoint(address newEndpoint) public ifAdmin {
+        _setEndpoint(newEndpoint);
+    }
+
+    function setPair(address newPair) public ifAdmin {
+        _setPair(newEndpoint);
+    }
+
+    function transferAdmin(address newAdmin) public ifAdmin {
+        require(newOwner != address(0));
+        _transferAdmin(newOwner);
+    }
+
+    function renounceAdmin() public ifAdmin {
+        _transferAdmin(address(0));
+    }
+
+    function _transferAdmin(address newAdmin) internal {
+        address oldAdmin = admin;
+        admin = newAdmin;
+        emit AdminTransferred(oldAdmin, newAdmin);
+    }
+}
