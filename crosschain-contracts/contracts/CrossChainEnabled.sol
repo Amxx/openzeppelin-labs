@@ -24,7 +24,7 @@ abstract contract CrossChainEnabled {
         return address(0); // TODO: revert?
     }
 
-    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint256 /*gas*/) internal virtual returns (bool) {
+    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint32 /*gas*/) internal virtual returns (bool) {
         return false; // TODO: revert?
     }
 }

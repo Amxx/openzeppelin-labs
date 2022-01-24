@@ -31,7 +31,7 @@ abstract contract CallForwarder is Context, AccessControl {
 abstract contract CrossChainCallForwarder is CallForwarder, CrossChainEnabled {
     bytes32 public constant CROSSCHAIN_EMITTER_ROLE = keccak256("CROSSCHAIN_EMITTER");
 
-    function crossChainExecute(address relayer, Call[] memory calls, uint256 gas) public virtual onlyRole(CROSSCHAIN_EMITTER_ROLE) {
+    function crossChainExecute(address relayer, Call[] memory calls, uint32 gas) public virtual onlyRole(CROSSCHAIN_EMITTER_ROLE) {
         _crossChainCall(
             relayer,
             abi.encodeWithSelector(CallForwarder.execute.selector, calls),

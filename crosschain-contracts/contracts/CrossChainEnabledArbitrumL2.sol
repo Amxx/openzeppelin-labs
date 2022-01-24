@@ -17,7 +17,7 @@ abstract contract CrossChainEnabledArbitrumL2 is CrossChainEnabled {
             : msg.sender;
     }
 
-    function _crossChainCall(address target, bytes memory data, uint256 /*gas*/) internal virtual override returns (bool) {
+    function _crossChainCall(address target, bytes memory data, uint32 /*gas*/) internal virtual override returns (bool) {
         arbsys.sendTxToL1(target, data);
         return true;
     }

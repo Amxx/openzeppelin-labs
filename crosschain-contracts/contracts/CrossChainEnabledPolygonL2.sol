@@ -21,7 +21,7 @@ abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessagePro
         return __crossChainSender;
     }
 
-    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint256 /*gas*/) internal virtual override returns (bool) {
+    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint32 /*gas*/) internal virtual override returns (bool) {
         revert("not-implemented-yet");
     }
 
