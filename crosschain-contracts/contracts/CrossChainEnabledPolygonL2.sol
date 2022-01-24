@@ -21,6 +21,10 @@ abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessagePro
         return __crossChainSender;
     }
 
+    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint256 /*gas*/) internal virtual override returns (bool) {
+        revert("not-implemented-yet");
+    }
+
     function processMessageFromRoot(
         uint256 /*stateId*/,
         address rootMessageSender,
@@ -30,5 +34,4 @@ abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessagePro
         Address.functionDelegateCall(address(this), data);
         __crossChainSender = address(0);
     }
-
 }

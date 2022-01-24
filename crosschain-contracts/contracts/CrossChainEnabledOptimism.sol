@@ -18,4 +18,9 @@ abstract contract CrossChainEnabledOptimism is CrossChainEnabled {
     function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
         return ICrossDomainMessenger(crossdomainmessenger).xDomainMessageSender();
     }
+
+    function _crossChainCall(address target, bytes memory data, uint256 gas) internal virtual override returns (bool) {
+        ICrossDomainMessenger(crossdomainmessenger).sendMessage(target, data, gas);
+        return true;
+    }
 }

@@ -22,4 +22,8 @@ abstract contract CrossChainEnabledArbitrumL1 is CrossChainEnabled {
         if (msg.sender != bridge) revert NotCrossChainCall();
         return IOutbox(IBridge(bridge).activeOutbox()).l2ToL1Sender();
     }
+
+    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint256 /*gas*/) internal virtual override returns (bool) {
+        revert("not-implemented-yet");
+    }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "gascost",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test"
+  },
+  "dependencies": {
+    "@amxx/hre": "^0.0.5",
+    "@nomiclabs/hardhat-truffle5": "^2.0.3",
+    "@openzeppelin/test-helpers": "^0.5.15"
+  }
+}

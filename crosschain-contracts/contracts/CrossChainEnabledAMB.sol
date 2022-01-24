@@ -18,4 +18,10 @@ abstract contract CrossChainEnabledAMB is CrossChainEnabled {
     function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
         return IAMB(amb).messageSender();
     }
+
+    function _crossChainCall(address target, bytes memory data, uint256 gas) internal virtual override returns (bool) {
+        require(IAMB(amb).maxGasPerTx() <= gas);
+        IAMB(amb).requireToPassMessage(target, data, gas);
+        return true;
+    }
 }
