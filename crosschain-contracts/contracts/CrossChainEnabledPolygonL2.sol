@@ -2,11 +2,14 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
-import "./interfaces/IFxMessageProcessor.sol";
+import "@maticnetwork/fx-portal/contracts/FxChild.sol";
 import "./CrossChainEnabled.sol";
 
 abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessageProcessor {
-    address internal immutable fxChild;
+    // MessageTunnel on L1 will get data from this event
+    event MessageSent(bytes message);
+
+    address public immutable fxChild;
     address private __crossChainSender;
 
     constructor(address _fxChild) {
@@ -21,8 +24,9 @@ abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessagePro
         return __crossChainSender;
     }
 
-    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint32 /*gas*/) internal virtual override returns (bool) {
-        revert("not-implemented-yet");
+    function _crossChainCall(address target, bytes memory data, uint32 /*gas*/) internal virtual override returns (bool) {
+        emit MessageSent(abi.encode(target, data));
+        return true;
     }
 
     function processMessageFromRoot(

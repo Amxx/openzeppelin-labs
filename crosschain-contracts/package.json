@@ -6,7 +6,8 @@
     "test": "hardhat test"
   },
   "dependencies": {
-    "@eth-optimism/contracts": "^0.5.5"
+    "@eth-optimism/contracts": "^0.5.5",
+    "@maticnetwork/fx-portal": "^1.0.4"
   },
   "devDependencies": {
     "@amxx/hre": "^0.0.4-1",
