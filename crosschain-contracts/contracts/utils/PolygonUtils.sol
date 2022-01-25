@@ -6,6 +6,7 @@ import { ICheckpointManager  } from "@maticnetwork/fx-portal/contracts/tunnel/Fx
 import { ExitPayloadReader   } from "@maticnetwork/fx-portal/contracts/lib/ExitPayloadReader.sol";
 import { Merkle              } from "@maticnetwork/fx-portal/contracts/lib/Merkle.sol";
 import { MerklePatriciaProof } from "@maticnetwork/fx-portal/contracts/lib/MerklePatriciaProof.sol";
+import { RLPReader           } from "@maticnetwork/fx-portal/contracts/lib/RLPReader.sol";
 
 /**
  * @dev Inspired by @maticnetwork/fx-portal/contracts/tunnel/FxBaseRootTunnel.sol:FxBaseRootTunnel

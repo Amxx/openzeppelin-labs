@@ -17,7 +17,7 @@ abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
     using ExitPayloadReader for ExitPayloadReader.Receipt;
     using PolygonUtils      for ExitPayloadReader.ExitPayload;
 
-    bytes32 internal constant EXECUTE_EVENT_SIG = keccak256('Execute(address,bytes)');
+    bytes32 internal constant EVENT_SIG = keccak256('CrossChainMessage(address,bytes)');
 
     IFxStateSender     public immutable fxRoot;
     ICheckpointManager public immutable checkpointManager;
@@ -58,8 +58,8 @@ abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
         ExitPayloadReader.LogTopics memory topics = log.getTopics();
 
         // check event validity
-        require(topics.getField(0).toUint()    == uint256(EXECUTE_EVENT_SIG), "CrossChainEnabledPolygonL1: INVALID_EVENT_SIG");
-        require(topics.getField(1).toAddress() == address(this),              "CrossChainEnabledPolygonL1: INVALID_SENDER");
+        require(topics.getField(0).toUint()    == uint256(EVENT_SIG), "CrossChainEnabledPolygonL1: INVALID_EVENT_SIG");
+        require(topics.getField(1).toAddress() == address(this),      "CrossChainEnabledPolygonL1: INVALID_SENDER");
         bytes memory data = abi.decode(log.getData(), (bytes));
 
         __crossChainSender  = log.getEmitter();
