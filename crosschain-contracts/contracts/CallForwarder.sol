@@ -24,15 +24,21 @@ abstract contract CallForwarder is
         bytes   data;
     }
 
-    function execute(Call[] memory calls) public virtual onlyRole(RELAYER_ROLE) returns (bytes[] memory results) {
+    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC1155Receiver) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function execute(Call[] memory calls) public virtual returns (bytes[] memory results) {
+        require(_isAuthorized(), "Unauthorized call");
+
         results = new bytes[](calls.length);
         for (uint256 i = 0; i < calls.length; i++) {
             results[i] = Address.functionCallWithValue(calls[i].target, calls[i].data, calls[i].value);
         }
     }
 
-    function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC1155Receiver) returns (bool) {
-        return super.supportsInterface(interfaceId);
+    function _isAuthorized() internal virtual returns (bool) {
+        return hasRole(RELAYER_ROLE, _msgSender());
     }
 }
 
@@ -42,6 +48,7 @@ abstract contract CrossChainCallForwarder is
     CallForwarder,
     CrossChainEnabled
 {
+    bytes32 public constant CROSSCHAIN_RELAYER_ROLE = keccak256("CROSSCHAIN_RELAYER");
     bytes32 public constant CROSSCHAIN_EMITTER_ROLE = keccak256("CROSSCHAIN_EMITTER");
 
     function crossChainExecute(address relayer, Call[] memory calls, uint32 gas) public virtual onlyRole(CROSSCHAIN_EMITTER_ROLE) {
@@ -52,7 +59,9 @@ abstract contract CrossChainCallForwarder is
         );
     }
 
-    function _msgSender() internal view virtual override returns (address) {
-        return _isCrossChain() ? _crossChainSender() : super._msgSender();
+    function _isAuthorized() internal virtual override returns (bool) {
+        return _isCrossChain()
+            ? hasRole(CROSSCHAIN_RELAYER_ROLE, _crossChainSender())
+            : super._isAuthorized();
     }
 }
