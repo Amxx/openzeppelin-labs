@@ -7,7 +7,7 @@ import "@maticnetwork/fx-portal/contracts/tunnel/FxBaseRootTunnel.sol";
 import "./utils/PolygonUtils.sol";
 import "../CrossChainEnabled.sol";
 
-abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
+abstract contract CrossChainEnabledPolygonRoot is CrossChainEnabled {
     using BitMaps           for BitMaps.BitMap;
     using RLPReader         for RLPReader.RLPItem;
     using ExitPayloadReader for bytes;
@@ -48,9 +48,9 @@ abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
 
         // check double exit & receipt validity & receipt inclusion
         uint256 exitHash = uint256(payload.getExitHash());
-        require(!_processedExits.get(exitHash),                      "CrossChainEnabledPolygonL1: EXIT_ALREADY_PROCESSED");
-        require(payload.verifyReceiptInclusion(),                    "CrossChainEnabledPolygonL1: INVALID_RECEIPT_PROOF");
-        require(payload.verifyCheckpointInclusion(checkpointManager),"CrossChainEnabledPolygonL1: INVALID_HEADER");
+        require(!_processedExits.get(exitHash),                      "CrossChainEnabledPolygonRoot: EXIT_ALREADY_PROCESSED");
+        require(payload.verifyReceiptInclusion(),                    "CrossChainEnabledPolygonRoot: INVALID_RECEIPT_PROOF");
+        require(payload.verifyCheckpointInclusion(checkpointManager),"CrossChainEnabledPolygonRoot: INVALID_HEADER");
         _processedExits.set(exitHash);
 
         // get log & topics
@@ -58,8 +58,8 @@ abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
         ExitPayloadReader.LogTopics memory topics = log.getTopics();
 
         // check event validity
-        require(topics.getField(0).toUint()    == uint256(EVENT_SIG), "CrossChainEnabledPolygonL1: INVALID_EVENT_SIG");
-        require(topics.getField(1).toAddress() == address(this),      "CrossChainEnabledPolygonL1: INVALID_SENDER");
+        require(topics.getField(0).toUint()    == uint256(EVENT_SIG), "CrossChainEnabledPolygonRoot: INVALID_EVENT_SIG");
+        require(topics.getField(1).toAddress() == address(this),      "CrossChainEnabledPolygonRoot: INVALID_SENDER");
         bytes memory data = abi.decode(log.getData(), (bytes));
 
         __crossChainSender  = log.getEmitter();
