@@ -7,7 +7,7 @@ import "./CrossChainEnabled.sol";
 
 abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessageProcessor {
     // MessageTunnel on L1 will get data from this event
-    event MessageSent(bytes message);
+    event Execute(address indexed target, bytes data);
 
     address public immutable fxChild;
     address private __crossChainSender;
@@ -25,7 +25,7 @@ abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessagePro
     }
 
     function _crossChainCall(address target, bytes memory data, uint32 /*gas*/) internal virtual override returns (bool) {
-        emit MessageSent(abi.encode(target, data));
+        emit Execute(target, data);
         return true;
     }
 

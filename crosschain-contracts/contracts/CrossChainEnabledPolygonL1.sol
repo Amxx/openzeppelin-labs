@@ -8,11 +8,22 @@ import "./CrossChainEnabled.sol";
 import "./utils/PolygonUtils.sol";
 
 abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
-    // keccak256(MessageSent(bytes))
+    using BitMaps           for BitMaps.BitMap;
+    using RLPReader         for RLPReader.RLPItem;
+    using ExitPayloadReader for bytes;
+    using ExitPayloadReader for ExitPayloadReader.ExitPayload;
+    using ExitPayloadReader for ExitPayloadReader.Log;
+    using ExitPayloadReader for ExitPayloadReader.LogTopics;
+    using ExitPayloadReader for ExitPayloadReader.Receipt;
+    using PolygonUtils      for ExitPayloadReader.ExitPayload;
+
+    bytes32 internal constant EXECUTE_EVENT_SIG = keccak256('Execute(address,bytes)');
+
     IFxStateSender     public immutable fxRoot;
     ICheckpointManager public immutable checkpointManager;
     BitMaps.BitMap     private _processedExits;
     address            private __crossChainSender;
+    address            private __crossChainRelayer;
 
     constructor(address _fxRoot, address _checkpointManager) {
         fxRoot = IFxStateSender(_fxRoot);
@@ -20,7 +31,7 @@ abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
     }
 
     function _isCrossChain() internal view virtual override returns (bool) {
-        return __crossChainSender != address(0); // reentrancy can break that, should receiveMessage store something else?
+        return __crossChainRelayer == msg.sender && __crossChainSender != address(0);
     }
 
     function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
@@ -33,11 +44,28 @@ abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
     }
 
     function receiveMessage(bytes memory inputData) public virtual {
-        (address sender, bytes memory message) = PolygonUtils.validateAndExtractMessage(checkpointManager, _processedExits, inputData);
-        (address target, bytes memory data   ) = abi.decode(message, (address, bytes));
-        require(target == address(this));
-        __crossChainSender = sender;
+        ExitPayloadReader.ExitPayload memory payload = inputData.toExitPayload();
+
+        // check double exit & receipt validity & receipt inclusion
+        uint256 exitHash = uint256(payload.getExitHash());
+        require(!_processedExits.get(exitHash),                      "CrossChainEnabledPolygonL1: EXIT_ALREADY_PROCESSED");
+        require(payload.verifyReceiptInclusion(),                    "CrossChainEnabledPolygonL1: INVALID_RECEIPT_PROOF");
+        require(payload.verifyCheckpointInclusion(checkpointManager),"CrossChainEnabledPolygonL1: INVALID_HEADER");
+        _processedExits.set(exitHash);
+
+        // get log & topics
+        ExitPayloadReader.Log       memory log    = payload.getReceipt().getLog();
+        ExitPayloadReader.LogTopics memory topics = log.getTopics();
+
+        // check event validity
+        require(topics.getField(0).toUint()    == uint256(EXECUTE_EVENT_SIG), "CrossChainEnabledPolygonL1: INVALID_EVENT_SIG");
+        require(topics.getField(1).toAddress() == address(this),              "CrossChainEnabledPolygonL1: INVALID_SENDER");
+        bytes memory data = abi.decode(log.getData(), (bytes));
+
+        __crossChainSender  = log.getEmitter();
+        __crossChainRelayer = msg.sender;
         Address.functionDelegateCall(address(this), data);
-        __crossChainSender = address(0);
+        __crossChainSender  = address(0);
+        __crossChainRelayer = address(0); // maybe we shouldn't clean that to improve gas usage
     }
 }
