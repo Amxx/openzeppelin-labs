@@ -16,15 +16,9 @@ abstract contract CrossChainEnabled {
         _;
     }
 
-    function _isCrossChain() internal view virtual returns (bool) {
-        return false;
-    }
+    function _isCrossChain() internal view virtual returns (bool);
 
-    function _crossChainSender() internal view virtual onlyCrossChain() returns (address) {
-        return address(0); // TODO: revert?
-    }
+    function _crossChainSender() internal view virtual returns (address);
 
-    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint32 /*gas*/) internal virtual returns (bool) {
-        return false; // TODO: revert?
-    }
+    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint32 /*gas*/) internal virtual returns (bool);
 }
