@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/structs/BitMaps.sol";
 import "@maticnetwork/fx-portal/contracts/tunnel/FxBaseRootTunnel.sol";
-import "./CrossChainEnabled.sol";
 import "./utils/PolygonUtils.sol";
+import "../CrossChainEnabled.sol";
 
 abstract contract CrossChainEnabledPolygonL1 is CrossChainEnabled {
     using BitMaps           for BitMaps.BitMap;

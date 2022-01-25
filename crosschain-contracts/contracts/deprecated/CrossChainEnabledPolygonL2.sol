@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@maticnetwork/fx-portal/contracts/FxChild.sol";
-import "./CrossChainEnabled.sol";
+import "../CrossChainEnabled.sol";
 
 abstract contract CrossChainEnabledPolygonL2 is CrossChainEnabled, IFxMessageProcessor {
     // MessageTunnel on L1 will get data from this event

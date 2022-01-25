@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./bridge/polygon/BridgePolygon.sol";
+import "./bridge/polygon/IBridge.sol";
 import "./CrossChainEnabled.sol";
 
 abstract contract CrossChainEnabledPolygon is CrossChainEnabled {
