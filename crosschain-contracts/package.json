@@ -7,7 +7,8 @@
   "dependencies": {
     "@eth-optimism/contracts": "^0.5.5",
     "@maticnetwork/fx-portal": "^1.0.4",
-    "@openzeppelin/contracts": "^4.5.0-rc.0"
+    "@openzeppelin/contracts": "^4.5.0-rc.0",
+    "@openzeppelin/git": "OpenZeppelin/openzeppelin-contracts"
   },
   "devDependencies": {
     "@amxx/hre": "^0.0.4-1",

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
-import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
+import "@openzeppelin/git/contracts/access/AccessControl.sol";
+import "@openzeppelin/git/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "@openzeppelin/git/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/git/contracts/utils/Address.sol";
 import "./AccessControlCrossChain.sol";
 
 struct Call { address target; uint256 value; bytes data; }
@@ -45,5 +45,9 @@ abstract contract CrossChainCallForwarder is CallForwarder, AccessControlCrossCh
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(CallForwarder, AccessControl) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    function _checkRole(bytes32 role) internal view virtual override(AccessControl, AccessControlCrossChain) {
+        super._checkRole(role);
     }
 }
