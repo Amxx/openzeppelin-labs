@@ -8,10 +8,10 @@ abstract contract AccessControlCrossChain is AccessControl, CrossChainEnabled {
     bytes32 public constant CROSSCHAIN_ALIAS = keccak256("CROSSCHAIN_ALIAS");
 
     function _checkRole(bytes32 role) internal view virtual override {
-        bool isCrossChain = _isCrossChain();
-        _checkRole(
-            isCrossChain ? (role ^ CROSSCHAIN_ALIAS) : role,
-            isCrossChain ? _crossChainSender() : _msgSender()
-        );
+        if (_isCrossChain()) {
+            _checkRole(role ^ CROSSCHAIN_ALIAS, _crossChainSender());
+        } else {
+            super._checkRole(role);
+        }
     }
 }
