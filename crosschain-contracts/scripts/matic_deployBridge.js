@@ -8,7 +8,7 @@ const argv = require('yargs/yargs')(process.argv.slice(2))
     .env('')
     .options({
         rootChain:  { type: 'string', default: process.env.GOERLI_NODE                                       },
-        childChain: { type: 'string', default: process.env.MUMBAI_NODE                                       },
+        childChain: { type: 'string', default: process.env.POLYGON_MUMBAI_NODE                               },
         mnemonic:   { type: 'string', default: 'test test test test test test test test test test test junk' },
     })
     .argv;
