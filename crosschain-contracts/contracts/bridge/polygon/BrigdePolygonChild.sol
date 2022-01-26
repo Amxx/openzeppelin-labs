@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@maticnetwork/fx-portal/contracts/tunnel/FxBaseChildTunnel.sol";
 import "./BridgeBase.sol";
 
-contract BrigdePolygonL2 is BrigdeBase, FxBaseChildTunnel {
+contract BrigdePolygonChild is BrigdeBase, FxBaseChildTunnel {
     constructor(address _fxChild)
     FxBaseChildTunnel(_fxChild)
     {}

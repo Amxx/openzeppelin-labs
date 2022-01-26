@@ -24,6 +24,8 @@ abstract contract CallForwarder is
         bytes   data;
     }
 
+    receive() external payable {}
+
     function supportsInterface(bytes4 interfaceId) public view virtual override(AccessControl, ERC1155Receiver) returns (bool) {
         return super.supportsInterface(interfaceId);
     }

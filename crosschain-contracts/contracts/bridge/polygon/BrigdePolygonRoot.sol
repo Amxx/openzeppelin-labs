@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@maticnetwork/fx-portal/contracts/tunnel/FxBaseRootTunnel.sol";
 import "./BridgeBase.sol";
 
-contract BrigdePolygonL1 is BrigdeBase, FxBaseRootTunnel {
+contract BrigdePolygonRoot is BrigdeBase, FxBaseRootTunnel {
     constructor(address _checkpointManager, address _fxRoot)
     FxBaseRootTunnel(_checkpointManager, _fxRoot)
     {}
