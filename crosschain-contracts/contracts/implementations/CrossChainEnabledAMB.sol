@@ -1,27 +1,25 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./interfaces/IAMB.sol";
-import "./CrossChainEnabled.sol";
+import "../CrossChainEnabled.sol";
+import "./libs/LibCrossChainAMB.sol";
 
 abstract contract CrossChainEnabledAMB is CrossChainEnabled {
-    address internal immutable amb;
+    AMB_Bridge internal immutable bridge;
 
-    constructor(address _amb) {
-        amb = _amb;
+    constructor(address _bridge) {
+        bridge = AMB_Bridge(_bridge);
     }
 
     function _isCrossChain() internal view virtual override returns (bool) {
-        return msg.sender == amb;
+        return LibCrossChainAMB.isCrossChain(bridge);
     }
 
     function _crossChainSender() internal view virtual override onlyCrossChain() returns (address) {
-        return IAMB(amb).messageSender();
+        return LibCrossChainAMB.crossChainSender(bridge);
     }
 
     function _crossChainCall(address target, bytes memory data, uint32 gas) internal virtual override returns (bool) {
-        require(IAMB(amb).maxGasPerTx() <= gas);
-        IAMB(amb).requireToPassMessage(target, data, gas);
-        return true;
+        return LibCrossChainAMB.crossChainCall(bridge, target, data, gas);
     }
 }
