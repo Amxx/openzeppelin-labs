@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-abstract contract CrossChainEnabled {
+abstract contract ICrossChainEnabled {
     error NotCrossChainCall();
     error InvalidCrossChainSender(address sender, address expected);
 
@@ -20,5 +20,5 @@ abstract contract CrossChainEnabled {
 
     function _crossChainSender() internal view virtual returns (address);
 
-    function _crossChainCall(address /*target*/, bytes memory /*data*/, uint32 /*gas*/) internal virtual returns (bool);
+    function _crossChainCall(address target, bytes memory message, uint32 gasLimit) internal virtual returns (bool);
 }
