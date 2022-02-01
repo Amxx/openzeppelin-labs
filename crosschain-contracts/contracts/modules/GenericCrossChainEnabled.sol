@@ -2,9 +2,9 @@
 pragma solidity ^0.8.0;
 
 import "../libs/LibCrossChain.sol";
-import "../ICrossChainEnabled.sol";
+import "../CrossChainEnabled.sol";
 
-abstract contract CrossChainEnabled is ICrossChainEnabled {
+abstract contract CrossChainEnabledGeneric is CrossChainEnabled {
     using LibCrossChain for LibCrossChain.Bridge;
 
     function _getBridge() internal view virtual returns (LibCrossChain.Bridge memory);

@@ -9,18 +9,18 @@ library LibCrossChainAMB {
         result._isCrossChain     = isCrossChain;
         result._crossChainSender = crossChainSender;
         result._crossChainCall   = crossChainCall;
-        result._bridge           = bridge;
+        result._endpoint         = bridge;
     }
 
-    function isCrossChain(address bridge) private view returns (bool) {
+    function isCrossChain(address bridge) internal view returns (bool) {
         return msg.sender == bridge;
     }
 
-    function crossChainSender(address bridge) private view returns (address) {
+    function crossChainSender(address bridge) internal view returns (address) {
         return AMB_Bridge(bridge).messageSender();
     }
 
-    function crossChainCall(address bridge, address target, bytes memory data, uint32 gas) private returns (bool) {
+    function crossChainCall(address bridge, address target, bytes memory data, uint32 gas) internal returns (bool) {
         require(AMB_Bridge(bridge).maxGasPerTx() <= gas);
         AMB_Bridge(bridge).requireToPassMessage(target, data, gas);
         return true;

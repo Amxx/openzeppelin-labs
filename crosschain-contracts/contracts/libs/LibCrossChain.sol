@@ -6,18 +6,18 @@ library LibCrossChain {
         function(address) internal view returns (bool) _isCrossChain;
         function(address) internal view returns (address) _crossChainSender;
         function(address, address, bytes memory, uint32) internal returns (bool) _crossChainCall;
-        address _bridge;
+        address _endpoint;
     }
 
     function isCrossChain(Bridge memory self) internal view returns (bool) {
-        return self._isCrossChain(self._bridge);
+        return self._isCrossChain(self._endpoint);
     }
 
     function crossChainSender(Bridge memory self) internal view returns (address) {
-        return self._crossChainSender(self._bridge);
+        return self._crossChainSender(self._endpoint);
     }
 
     function crossChainCall(Bridge memory self, address target, bytes memory message, uint32 gasLimit) internal returns (bool) {
-        return self._crossChainCall(self._bridge, target, message, gasLimit);
+        return self._crossChainCall(self._endpoint, target, message, gasLimit);
     }
 }

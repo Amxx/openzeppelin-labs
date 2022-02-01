@@ -7,22 +7,29 @@ import { IOutbox as ArbitrumL1_Outbox } from "../global/interfaces/arbitrum/IOut
 import "./LibCrossChain.sol";
 
 library LibCrossChainArbitrumL1 {
-    function getBridge(address bridge) internal pure returns (LibCrossChain.Bridge memory result) {
+    function getBridge(address inbox) internal pure returns (LibCrossChain.Bridge memory result) {
         result._isCrossChain     = isCrossChain;
         result._crossChainSender = crossChainSender;
         result._crossChainCall   = crossChainCall;
-        result._bridge           = bridge;
+        result._endpoint         = inbox;
     }
 
-    function isCrossChain(address bridge) private view returns (bool) {
-        return msg.sender == bridge;
+    function isCrossChain(address inbox) internal view returns (bool) {
+        return msg.sender == ArbitrumL1_Inbox(inbox).bridge();
     }
 
-    function crossChainSender(address bridge) private view returns (address) {
-        return ArbitrumL1_Outbox(ArbitrumL1_Bridge(bridge).activeOutbox()).l2ToL1Sender();
+    function crossChainSender(address inbox) internal view returns (address) {
+        return ArbitrumL1_Outbox(ArbitrumL1_Bridge(ArbitrumL1_Inbox(inbox).bridge()).activeOutbox()).l2ToL1Sender();
     }
 
-    function crossChainCall(address /*bridge*/, address /*target*/, bytes memory /*data*/, uint32 /*gas*/) private pure returns (bool) {
-        revert("not-implemented-yet");
+    function crossChainCall(address bridge, address target, bytes memory data, uint32 gas) internal returns (bool) {
+        ArbitrumL1_Inbox(bridge).sendContractTransaction(
+            gas,
+            0, // gasPriceBid
+            target,
+            0,
+            data
+        );
+        return true;
     }
 }

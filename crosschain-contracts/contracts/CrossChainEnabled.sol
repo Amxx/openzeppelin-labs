@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-abstract contract ICrossChainEnabled {
+abstract contract CrossChainEnabled {
     error NotCrossChainCall();
     error InvalidCrossChainSender(address sender, address expected);
 

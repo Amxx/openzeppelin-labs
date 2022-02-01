@@ -19,9 +19,10 @@ abstract contract BrigdeBase is IBridge {
     }
 
     function _forward(address sender, address target, bytes memory data) internal {
+        address previousSender = _sender;
         _sender = sender;
         (bool success, bytes memory returndata) = target.call(data);
-        _sender = DEFAULT_SENDER;
+        _sender = previousSender;
 
         if (success) {
             emit CallSuccess();
