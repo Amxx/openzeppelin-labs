@@ -35,7 +35,8 @@ abstract contract CrossChainCallForwarder is CallForwarder, AccessControlCrossCh
     bytes32 public constant CROSSCHAIN_RELAYER_ROLE = RELAYER_ROLE ^ CROSSCHAIN_ALIAS;
     bytes32 public constant CROSSCHAIN_EMITTER_ROLE = EMITTER_ROLE ^ CROSSCHAIN_ALIAS;
 
-    function crossChainExecute(address relayer, Call[] memory calls, uint32 gas) public virtual onlyRole(EMITTER_ROLE) {
+    // payable needed for some cases (arbitrum L1)
+    function crossChainExecute(address relayer, Call[] memory calls, uint32 gas) public payable virtual onlyRole(EMITTER_ROLE) {
         _crossChainCall(
             relayer,
             abi.encodeWithSelector(CallForwarder.execute.selector, calls),

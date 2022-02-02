@@ -16,4 +16,8 @@ abstract contract CrossChainEnabledArbitrumL2 is CrossChainEnabled {
     function _crossChainCall(address target, bytes memory message, uint32 gasLimit) internal virtual override returns (bool) {
         return LibCrossChainArbitrumL2.crossChainCall(address(LibCrossChainArbitrumL2.ARBSYS), target, message, gasLimit);
     }
+
+    function _crossChainCallWithValue(address target, uint256 value, bytes memory message, uint32 gasLimit) internal virtual returns (bool) {
+        return LibCrossChainArbitrumL2.crossChainCallWithValue(address(LibCrossChainArbitrumL2.ARBSYS), target, value, message, gasLimit);
+    }
 }

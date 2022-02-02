@@ -24,8 +24,12 @@ library LibCrossChainArbitrumL2 {
             : msg.sender;
     }
 
-    function crossChainCall(address bridge, address target, bytes memory data, uint32 /*gas*/) internal returns (bool) {
-        ArbitrumL2_Bridge(bridge).sendTxToL1(target, data);
+    function crossChainCall(address bridge, address target, bytes memory data, uint32 gas) internal returns (bool) {
+        return crossChainCallWithValue(bridge, target, 0, data, gas);
+    }
+
+    function crossChainCallWithValue(address bridge, address target, uint256 value, bytes memory data, uint32 /*gas*/) internal returns (bool) {
+        ArbitrumL2_Bridge(bridge).sendTxToL1{ value: value }(target, data);
         return true;
     }
 }

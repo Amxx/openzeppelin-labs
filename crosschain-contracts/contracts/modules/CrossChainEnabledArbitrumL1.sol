@@ -22,4 +22,12 @@ abstract contract CrossChainEnabledArbitrumL1 is CrossChainEnabled {
     function _crossChainCall(address target, bytes memory message, uint32 gasLimit) internal virtual override returns (bool) {
         return LibCrossChainArbitrumL1.crossChainCall(bridge, target, message, gasLimit);
     }
+
+    function _crossChainCallWithValue(address target, uint256 value, bytes memory message, uint32 gasLimit) internal virtual returns (bool) {
+        return LibCrossChainArbitrumL1.crossChainCallWithValue(bridge, target, value, message, gasLimit);
+    }
+
+    function _crossChainCallCost(address target, bytes memory message, uint32 gasLimit) internal virtual returns (uint256) {
+        return LibCrossChainArbitrumL1.crossChainCallCost(bridge, target, message, gasLimit);
+    }
 }

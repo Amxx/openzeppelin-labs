@@ -6,6 +6,8 @@ import { IInbox  as ArbitrumL1_Inbox  } from "../global/interfaces/arbitrum/IInb
 import { IOutbox as ArbitrumL1_Outbox } from "../global/interfaces/arbitrum/IOutbox.sol";
 import "./LibCrossChain.sol";
 
+error InsuficientFunds();
+
 library LibCrossChainArbitrumL1 {
     function getBridge(address inbox) internal pure returns (LibCrossChain.Bridge memory result) {
         result._isCrossChain     = isCrossChain;
@@ -23,13 +25,58 @@ library LibCrossChainArbitrumL1 {
     }
 
     function crossChainCall(address bridge, address target, bytes memory data, uint32 gas) internal returns (bool) {
-        ArbitrumL1_Inbox(bridge).sendContractTransaction(
-            gas,
-            0, // gasPriceBid
+        return crossChainCallWithValue(bridge, target, 0, data, gas);
+    }
+
+    function crossChainCallWithValue(address bridge, address target, uint256 value, bytes memory data, uint32 gas) internal returns (bool) {
+        uint256 submissionCost = crossChainCallCost(bridge, target, data, gas);
+        return createRetryableTicket(
+            bridge,
             target,
+            value,
+            data,
+            address(this),
+            gas,
             0,
-            data
+            submissionCost,
+            submissionCost + value
         );
+    }
+
+    /**
+     * This low level mechanism can be used to drain the funds that would accumulate
+     * on L2 (at the aliased address), due to over-estimation of the submission cost.
+     */
+    function createRetryableTicket(
+        address      bridge,
+        address      target,
+        uint256      value,
+        bytes memory data,
+        address      refund,
+        uint32       gas,
+        uint256      gasPriceBid,
+        uint256      submissionCost,
+        uint256      l1Value
+    ) internal returns (bool) {
+        if (address(this).balance < l1Value) {
+            revert InsuficientFunds();
+        }
+
+        ArbitrumL1_Inbox(bridge).createRetryableTicket{ value: l1Value }(
+            target,         // destAddr
+            value,          // arbTxCallValue
+            submissionCost, // maxSubmissionCost
+            refund,         // submissionRefundAddress
+            refund,         // valueRefundAddress
+            gas,            // maxGas
+            gasPriceBid,    // gasPriceBid
+            data            // data
+        );
+
         return true;
+    }
+
+    function crossChainCallCost(address /*bridge*/, address /*target*/, bytes memory data, uint32 /*gas*/) internal view returns (uint256) {
+        return (block.basefee * 3 / 2) * (1 + data.length / 256); // take 50% margin over basefee ?
     }
 }
