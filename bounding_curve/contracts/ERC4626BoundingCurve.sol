@@ -22,6 +22,7 @@ contract ERC4626BoundingCurve is ERC20TokenizedVault {
     ERC20(_name, _symbol)
     ERC20TokenizedVault(_asset)
     {
+        require(_buyCurveParam <= _sellCurveParam, "ERC4626BoundingCurve: unsafe params");
         BUY_CURVE_PARAM  = _buyCurveParam;
         SELL_CURVE_PARAM = _sellCurveParam;
     }
