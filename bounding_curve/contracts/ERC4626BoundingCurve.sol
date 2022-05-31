@@ -3,14 +3,10 @@
 pragma solidity ^0.8.14;
 
 import "@prb/math/contracts/PRBMathUD60x18.sol";
-import "@prb/math/contracts/PRBMathSD59x18.sol";
 import "@openzeppelin/contracts/contracts/token/ERC20/extensions/ERC20TokenizedVault.sol";
 import "@openzeppelin/contracts/contracts/utils/math/SafeCast.sol";
 
 contract ERC4626BoundingCurve is ERC20TokenizedVault {
-    using SafeCast for int256;
-    using SafeCast for uint256;
-    using PRBMathSD59x18 for int256;
     using PRBMathUD60x18 for uint256;
 
     uint256 public immutable BUY_CURVE_PARAM;
@@ -32,59 +28,37 @@ contract ERC4626BoundingCurve is ERC20TokenizedVault {
 
     function previewDeposit(uint256 assets) public view override returns (uint256 shares) {
         uint256 tA = totalAssets();
+        uint256 tS = totalSupply();
+
         return tA == 0
             ? assets
-            : (
-                (PRBMathUD60x18.SCALE + PRBMathUD60x18.div(assets.fromUint(), tA.fromUint())).pow(BUY_CURVE_PARAM)
-                -
-                PRBMathUD60x18.SCALE
-            )
-            .mul(totalSupply().fromUint())
-            .toUint();
+            : tS.fromUint().mul(PRBMathUD60x18.div(tA + assets, tA).pow(BUY_CURVE_PARAM)).toUint() - tS;
     }
 
     function previewMint(uint256 shares) public view override returns (uint256 assets) {
+        uint256 tA = totalAssets();
         uint256 tS = totalSupply();
+
         return tS == 0
             ? shares
-            : (
-                (PRBMathUD60x18.SCALE + PRBMathUD60x18.div(shares.fromUint(), tS.fromUint())).pow(BUY_CURVE_PARAM.inv())
-                -
-                PRBMathUD60x18.SCALE
-            )
-            .mul(totalAssets().fromUint())
-            .toUint();
+            : tA.fromUint().mul(PRBMathUD60x18.div(tS + shares, tS).pow(BUY_CURVE_PARAM.inv())).toUint() - tA;
     }
 
     function previewWithdraw(uint256 assets) public view override returns (uint256 shares) {
         uint256 tA = totalAssets();
+        uint256 tS = totalSupply();
+
         return tA == 0
-            ? assets == 0
-                ? 0
-                : type(uint256).max
-            : (
-                PRBMathSD59x18.SCALE
-                -
-                (PRBMathSD59x18.SCALE - PRBMathSD59x18.div(assets.toInt256().fromInt(), tA.toInt256().fromInt())).pow(SELL_CURVE_PARAM.toInt256())
-            )
-            .mul(totalSupply().toInt256().fromInt())
-            .toInt()
-            .toUint256();
+            ? assets == 0 ? 0 : type(uint256).max
+            : tS - tS.fromUint().div(PRBMathUD60x18.div(tA, tA - assets).pow(SELL_CURVE_PARAM)).toUint();
     }
 
     function previewRedeem(uint256 shares) public view override returns (uint256 assets) {
+        uint256 tA = totalAssets();
         uint256 tS = totalSupply();
+
         return tS == 0
-            ? shares == 0
-                ? 0
-                : type(uint256).max
-            : (
-                PRBMathSD59x18.SCALE
-                -
-                (PRBMathSD59x18.SCALE - PRBMathSD59x18.div(shares.toInt256().fromInt(), tS.toInt256().fromInt())).pow(SELL_CURVE_PARAM.toInt256().inv())
-            )
-            .mul(totalAssets().toInt256().fromInt())
-            .toInt()
-            .toUint256();
+            ? shares == 0 ? 0 : type(uint256).max
+            : tA - tA.fromUint().div(PRBMathUD60x18.div(tS, tS - shares).pow(SELL_CURVE_PARAM.inv())).toUint();
     }
 }
