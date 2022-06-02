@@ -66,7 +66,7 @@ describe('ERC4626BoundingCurve', function () {
             const balance = vault.balanceOf(user.address);
             await vault.connect(user).redeem(balance, user.address, user.address);
 
-            await token.balanceOf(user.address).then(value => console.log("tokens redeemed:  ", value.toString()));
+            await token.balanceOf(user.address).then(value => console.log("tokens redeemed: ", value.toString()));
         });
     });
 

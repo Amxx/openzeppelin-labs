@@ -5,7 +5,7 @@
     "test": "hardhat test"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "git://github.com/Amxx/openzeppelin-contracts.git#feature/ERC4626",
+    "@openzeppelin/contracts": "git://github.com/OpenZeppelin/openzeppelin-contracts.git",
     "@prb/math": "^2.5.0"
   },
   "devDependencies": {
