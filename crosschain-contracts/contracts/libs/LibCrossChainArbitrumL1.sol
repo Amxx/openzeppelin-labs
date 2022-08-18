@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { IBridge as ArbitrumL1_Bridge } from "../global/interfaces/arbitrum/IBridge.sol";
-import { IInbox  as ArbitrumL1_Inbox  } from "../global/interfaces/arbitrum/IInbox.sol";
-import { IOutbox as ArbitrumL1_Outbox } from "../global/interfaces/arbitrum/IOutbox.sol";
+import { IBridge as ArbitrumL1_Bridge } from "../interfaces/arbitrum/IBridge.sol";
+import { IInbox  as ArbitrumL1_Inbox  } from "../interfaces/arbitrum/IInbox.sol";
+import { IOutbox as ArbitrumL1_Outbox } from "../interfaces/arbitrum/IOutbox.sol";
 import "./LibCrossChain.sol";
 
 error InsuficientFunds();

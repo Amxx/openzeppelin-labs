@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import { IArbSys as ArbitrumL2_Bridge } from "../global/interfaces/arbitrum/IArbSys.sol";
+import { IArbSys as ArbitrumL2_Bridge } from "../interfaces/arbitrum/IArbSys.sol";
 import "./LibCrossChain.sol";
 
 library LibCrossChainArbitrumL2 {
