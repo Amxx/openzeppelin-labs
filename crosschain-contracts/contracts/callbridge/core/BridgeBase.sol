@@ -5,9 +5,6 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "./IBridge.sol";
 
-// see: "@eth-optimism/contracts/libraries/constants/Lib_DefaultValues.sol";
-address constant DEFAULT_SENDER = 0x000000000000000000000000000000000000dEaD;
-
 abstract contract BrigdeBase is IBridge {
     using Counters for Counters.Counter;
 
@@ -16,13 +13,6 @@ abstract contract BrigdeBase is IBridge {
     event RetrySuccess(address indexed sender, address indexed target, bytes data);
 
     mapping(bytes32 => Counters.Counter) private retryTickets;
-
-    address internal _sender = DEFAULT_SENDER;
-
-    function messageSender() public view returns (address) {
-        require(_sender != DEFAULT_SENDER, "messageSender is not set");
-        return _sender;
-    }
 
     function retry(address sender, address target, bytes calldata data) external {
         retryTickets[keccak256(abi.encode(sender, target, data))].decrement(); // revert if overflow
@@ -44,11 +34,9 @@ abstract contract BrigdeBase is IBridge {
         }
     }
 
+    // Use ERC2771 to pass sender without relying on storage
     function _tryExecute(address sender, address target, bytes memory data) internal returns (bool success, bytes memory returndata) {
-        address previousSender = _sender;
-        _sender = sender;
-        (success, returndata) = target.call(data);
-        _sender = previousSender;
+        (success, returndata) = target.call(abi.encodePacked(data, sender));
     }
 
     function _encodeMessage(address sender, address target, bytes memory data) internal pure returns (bytes memory message) {
